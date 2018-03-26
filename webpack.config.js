@@ -3,7 +3,6 @@ const path = require("path");
 
 module.exports = {
   entry: {
-    admin: path.resolve(__dirname, "src/admin/main.js"),
     main: path.resolve(__dirname, "src/scripts/main.js")
   },
   output: {
@@ -82,7 +81,28 @@ module.exports = {
   devtool: "#eval-source-map"
 };
 
+if (process.env.NODE_ENV) {
+  module.exports.entry = Object.assign(module.exports.entry, {
+    admin: path.resolve(__dirname, "src/admin/main.js")
+  })
+}
 
 if (process.env.NODE_ENV === "production") {
-
+  module.exports.devtool = "#source-map";
+  module.exports.plugins = (module.exports.plugins || []).concat([
+    new webpack.DefinePlugin({
+      "process.env": {
+        NODE_ENV: '"production"'
+      }
+    }),
+    new webpack.optimize.UglifyJsPlugin({
+      sourceMap: true,
+      compress: {
+        warnings: false
+      }
+    }),
+    new webpack.LoaderOptionsPlugin({
+      minimize: true
+    })
+  ]);
 }

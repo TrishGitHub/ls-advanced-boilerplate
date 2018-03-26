@@ -6,6 +6,7 @@ const $gp = require("gulp-load-plugins")();
 const browserSync = require("browser-sync").create();
 const reload = browserSync.reload;
 const webpack = require("webpack");
+const mergeStream = require("merge-stream");
 const webpackConfig = require("./webpack.config.js");
 const moduleImporter = require("sass-module-importer");
 const del = require("del");
@@ -115,8 +116,7 @@ gulp.task("svg", done => {
       .pipe($gp.replace("&gt;", ">"));
   };
 
-
-  prettySvgs()
+  let svgSprite = prettySvgs()
     .pipe(
       $gp.svgSprite({
         mode: {
@@ -127,14 +127,14 @@ gulp.task("svg", done => {
       })
     )
     .pipe(gulp.dest(`${DIST_DIR}/images/icons`));
-
-  prettySvgs().pipe(
+  
+  let svgInline = prettySvgs().pipe(
     $gp.sassInlineSvg({
       destDir: `${SRC_DIR}/styles/icons/`
     })
   );
 
-  done();
+  return mergeStream(svgSprite, svgInline);
 });
 
 // просто переносим картинки
@@ -150,15 +150,22 @@ gulp.task("watch", () => {
   gulp.watch(`${SRC_DIR}/images/**/*.*`, gulp.series("images"));
   gulp.watch(`${SRC_DIR}/scripts/**/*.js`, gulp.series("scripts"));
   gulp.watch(`${SRC_DIR}/fonts/*`, gulp.series("fonts"));
-  gulp.watch(`views/pages/*`).on('change', reload);
+  gulp.watch(`views/pages/*`).on("change", reload);
 });
+
+
+gulp.task('build', gulp.series(
+  "svg",
+  gulp.parallel("styles", "images", "fonts", "scripts")
+));
 
 // GULP:RUN
 gulp.task(
   "default",
   gulp.series(
     "clean",
-    gulp.parallel("styles", "images", "fonts", "scripts", "svg"),
+    "svg",
+    gulp.parallel("styles", "images", "fonts", "scripts"),
     gulp.parallel("watch", "server")
   )
 );
