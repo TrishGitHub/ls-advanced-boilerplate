@@ -115,6 +115,7 @@ gulp.task("svg", done => {
       .pipe($gp.replace("&gt;", ">"));
   };
 
+
   prettySvgs()
     .pipe(
       $gp.svgSprite({
