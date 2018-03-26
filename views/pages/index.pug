@@ -5,4 +5,24 @@ block variables
 
 block content
   h1 Главная страница
-  .block
+
+  #wrapper
+
+  script(type="text/x-template" id="circle-list")
+    ul.list
+      li.list__item
+        crcl(
+          percents="200%",
+          v-for="item in items",
+          :key="item.title",
+          :title="item.title",
+          :percents="item.percents"
+        )
+
+  script(type="text/x-template" id="circle")
+    .element
+      .element__percents(
+        @click="handleClick"
+        ref="title"
+      ) {{title}}
+      .element__percents {{percents}}
